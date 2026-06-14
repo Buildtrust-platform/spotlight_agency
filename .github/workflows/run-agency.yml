@@ -1,0 +1,30 @@
+name: Run Agency
+
+on:
+  workflow_dispatch:
+    inputs:
+      brief:
+        description: "Client brief (leave blank for the built-in Moonmilk sample)"
+        required: false
+        default: ""
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - name: Run the agency
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node src/cli.mjs "${{ github.event.inputs.brief }}"
+      - name: Upload deliverables
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agency-deliverables
+          path: artifacts/
+          if-no-files-found: warn
