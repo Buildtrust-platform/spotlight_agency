@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "agency": "node src/cli.mjs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "verify": "node src/verify.mjs",
+    "test": "node src/verify.mjs"
   },
   "author": "",
   "license": "ISC",

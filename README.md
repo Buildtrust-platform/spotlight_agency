@@ -64,13 +64,23 @@ Output:
   *would* run, with its full payload, awaiting your review)
 - **Executive summary** printed to the console
 
+## Verify it works
+
+```bash
+npm run verify
+```
+Validates every agent, tool, and the safe-mode gate — no API key, no network
+calls. This is also what CI runs (`.github/workflows/ci.yml`).
+
 ## Going live
 
 Scaffold mode is the safety default. To actually execute outward-facing actions:
 
-1. Implement the `live` adapter in each external tool (`src/tools/*.mjs`) — the
-   seam is marked with a `// live:` comment next to each `externalTool`. Wire it
-   to the corresponding service/MCP server (Apollo, Mailchimp, Canva, …).
+1. Implement the `live` adapter for an external tool. **Mailchimp is already
+   wired** (`src/tools/adapters/mailchimp.mjs`): `queue_outreach` creates a
+   *draft* campaign — a human still sends it. The other external tools (Apollo,
+   Canva, Notion, …) follow the same pattern; their `live` seam is the next
+   argument to `externalTool` in `src/tools/*.mjs`.
 2. Provide credentials (see `.env.example`).
 3. Set `AGENCY_SAFE_MODE=false`.
 

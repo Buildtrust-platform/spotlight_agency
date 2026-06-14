@@ -73,8 +73,31 @@ const queueOutreach = externalTool(
     service: input.channel === "mailchimp" ? "Mailchimp" : "Gmail",
     summary: `Queue campaign '${input.campaign_name}' to ${input.audience_ref || "TBD audience"}`,
     payload: input,
-  })
-  // live: (input) => mailchimp.createCampaign(input) / gmail.createDraft(input)
+  }),
+  // Live path (runs only when AGENCY_SAFE_MODE=false). Mailchimp is fully wired
+  // and creates a DRAFT campaign — a human still sends it from Mailchimp.
+  async (input) => {
+    if (input.channel !== "mailchimp") {
+      throw new Error(`No live adapter for '${input.channel}' yet — Mailchimp is the wired channel.`);
+    }
+    const { createDraftCampaign } = await import("./adapters/mailchimp.mjs");
+    const fs = await import("node:fs");
+    const path = await import("node:path");
+    const { ARTIFACTS_DIR } = await import("../config.mjs");
+    let body = `Campaign: ${input.campaign_name}`;
+    if (input.copy_ref) {
+      const full = path.join(ARTIFACTS_DIR, input.copy_ref);
+      if (fs.existsSync(full)) body = fs.readFileSync(full, "utf8");
+    }
+    const html = `<div style="font-family:sans-serif;white-space:pre-wrap">${body
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>`;
+    return createDraftCampaign({
+      subject: input.campaign_name,
+      title: `${input.client} — ${input.campaign_name}`,
+      html,
+      audienceId: input.audience_ref,
+    });
+  }
 );
 
 export const leadGenTools = [searchProspects, draftEmailSequence, queueOutreach, ...commonTools];
