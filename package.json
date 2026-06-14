@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "agency": "node src/cli.mjs",
+    "dashboard": "node src/server.mjs",
     "verify": "node src/verify.mjs",
     "test": "node src/verify.mjs"
   },
